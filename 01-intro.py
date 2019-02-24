@@ -23,9 +23,31 @@ def print_env_info(env):
 
 def main():
     env = gym.make('CartPole-v0')
+    tmax = 1000
     print_env_info(env)
-    initial_obs = env.reset()
-    print("Initial observation", initial_obs)
+    random_policies = np.random.uniform(-1,1,(500,env.observation_space.shape[0]))
+    total_reward = []
+    for i in range(random_policies.shape[0]):
+        obs = env.reset()
+        done = False
+        episode_reward = 0
+        while tmax>0 or not done:
+            action = int(np.dot(obs, random_policies[i,:])>0)
+            obs, reward, done, info = env.step(action)
+            episode_reward += reward
+            tmax-=1
+        total_reward.append(episode_reward)
+    idx = np.argmax(total_reward)
+    print("Max reward values: {} \n With policy number {} \n "
+          "The following parameters: {}".format(total_reward[idx],
+                                                idx,
+                                                random_policies[idx,:]))
+    obs = env.reset()
+    done = False
+    while not done:
+        env.render()
+        obs, reward, done, info = env.step(int(np.dot(random_policies[idx,:], obs)>0))
+    env.env.close()
 
 if __name__ == '__main__':
     print("executing ", __file__)
